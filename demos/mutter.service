@@ -1,0 +1,46 @@
+[Unit]
+Description=Mutter
+OnFailureJobMode=replace
+CollectMode=inactive-or-failed
+RefuseManualStart=off
+RefuseManualStop=off
+
+# Make sure we are started after logins are permitted.
+Requires=systemd-user-sessions.service
+After=systemd-user-sessions.service
+
+# Limit startup frequency more than the default
+StartLimitIntervalSec=15s
+StartLimitBurst=3
+
+# If Plymouth is used, we want to start when it is on its way out.
+After=plymouth-quit-wait.service
+
+# D-Bus is necessary for contacting logind. Logind is required.
+Wants=dbus.socket
+After=dbus.socket
+
+Wants=dconf.service
+After=dconf.service
+
+# Since we are part of the graphical session, make sure we are started before
+Before=graphical-session.target
+
+[Service]
+Type=notify
+Environment=G_MESSAGES_DEBUG=all
+Environment=MUTTER_DEBUG=all
+Environment=WAYLAND_DISPLAY=wayland-0
+Environment=XDG_SESSION_TYPE=wayland
+Environment=QT_QPA_PLATFORM=wayland
+ExecStart=mutter --wayland --display-server --sm-disable
+
+# Kill any stubborn child processes after this long
+TimeoutStopSec=5
+TimeoutStartSec=60
+
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=graphical-session.target
