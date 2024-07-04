@@ -1,0 +1,23 @@
+name: selint-checks
+
+on:
+  pull_request:
+    paths:
+      - '**.if'
+jobs:
+  selint:
+    name: Check selinux code with selint
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Install selint
+        run: sudo apt-get install -y selint
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+
+      - name: Run selint check
+        run: |
+          setenforce 1
+          selint qm.if
